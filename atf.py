@@ -6,6 +6,9 @@ from matplotlib.dates import DateFormatter
 import glob
 import os
 import openpyxl
+from typing import Optional
+import squarify 
+import numpy as np
 newdir = "/Volumes/Mac_Passport/projects/personal/atf/"
 os.chdir(newdir)
 #from utils import concat_dfs
@@ -171,14 +174,18 @@ month_order = [
 newdf['Month_cat'] = pd.Categorical(newdf['Month_Name'], categories=month_order, ordered=True)
 
 
+    # Int
+
+mycolumns = ['Inspections', 'Warnings', 'Revoked_Licenses']
+
+for col in mycolumns: 
+    newdf[col] = newdf[col].astype(int)
+
 ######################################################
 
 # Descriptives
 
-mycolumns = ['Inspections', 'Warnings', 'Revoked_Licenses']
-
-
-df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max'])
+df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max']) # TODO examine future warning
 
 ######################################################
 
@@ -195,14 +202,13 @@ year_colors = {
    
 
 
-# National Figs
     
 dftotal = newdf[newdf['Office'] == 'Total'].copy()
 dftotal = dftotal.sort_values(by='Year', ascending=False)
 
 def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
     plt.figure(figsize=(10, 6))
-    sns.lineplot(data=df, x='Month_cat', y=yval, hue='Year', palette=year_colors, linewidth=2.5)
+    sns.lineplot(data=df, x='Month_cat', y=yval, hue='Year', palette=year_colors, linewidth=2.5, errorbar=None)
     plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
     plt.ylabel(ylabel, fontsize=14)
     plt.xlabel(None) 
@@ -210,63 +216,102 @@ def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
     plt.show()
     
     
-def make_series_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
+def make_series_line_plot (df:pd.DataFrame, yval: str, ylabel: str, group_by: Optional[str] = None):
+    '''
+    Create a time-series line plot with optional grouping by a column.
+    Optional parameter:
+    group_by (Optional[str]): The column name to use for grouping (i.e., 'Region' or 'Office').
+    '''
     plt.figure(figsize=(10, 6))
-    sns.lineplot(data=df, x='Date', y=yval,linewidth=2.5)
+    
+    if group_by:
+        sns.lineplot(data=df, x='Date', y=yval, hue=group_by, linewidth=2.5, errorbar=None)
+    else:
+        sns.lineplot(data=df, x='Date', y=yval, linewidth=2.5, errorbar=None)
+    
+    # Format y axis tick labels with commas
     plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+    
+    # Format x axis tick labels in Jan 2021 format
     date_format = DateFormatter('%b %Y')
     plt.gca().xaxis.set_major_formatter(date_format)
+    
     plt.ylabel(ylabel, fontsize=14)
-    plt.xticks(rotation=45) 
     plt.xlabel(None) 
+    plt.xticks(rotation=45) 
     plt.show()
 
+
+
+
+
+# National Figs
+
+for column in mycolumns:
+    # Seasonality line fig (one line per year)
+    make_seasonal_line_plot (df = dftotal, yval = column, ylabel = f'{column}')
     
-
-
-'''
-for column in mycolumns:
-    make_seasonal_line_plot (df = dftotal, yval = column, ylabel = f'{column}')
-'''
-
-    # Line graph w each year as a line - for seasonality
-
-    # Line fig at national level (one line)
-
-for column in mycolumns:
-    make_seasonal_line_plot (df = dftotal, yval = column, ylabel = f'{column}')
+    # Chronological full period line fig (one line)
     make_series_line_plot(df = dftotal, yval = column, ylabel = f'{column}')
 
 
-# FieldOffice Figs, Line fig per state (one line per fig) 
-    
-dfoffice = newdf.groupby(['Office', 'Year'])[mycolumns].agg('sum').reset_index()
+
+
+
+# Field Office Figs
+    '''
+dfoffice_annual = newdf.groupby(['Office', 'Year'])[mycolumns].agg('sum').reset_index()
+dfoffice_annual['Region'] = dfoffice_annual['Office'].map(regions)
+'''
+
+dfoffice = newdf.groupby(['Office'])[mycolumns].agg('sum').reset_index()
+
 dfoffice['Region'] = dfoffice['Office'].map(regions)
+dfoffice = dfoffice.dropna(subset=['Region']) # I tried dropping the Total row in many many ways but could not completely get rid of remnants. shows up as Total has 0 values.
+dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
+
+                                        # Line fig per state (one line per fig) 
+
+    # TODO treemap showing the most busts per office, with region category overlaid. full administration time period. one fig per column of interest.
+
+cmap = plt.cm.Blues  # Base colormap
+colors = cmap(np.linspace(0.3, 0.8, len(dfoffice)))
+label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]
+labels_with_values = [f"{office}\n{inspections}" for office, inspections in zip(dfoffice['Office'], dfoffice['Inspections'])]
+plt.figure(figsize=(12, 11))
+ax = squarify.plot(sizes=dfoffice['Inspections'], label=labels_with_values, color=colors, alpha=0.8)
+
+for i, label in enumerate(ax.texts):
+    label.set_fontsize(12)
+    label.set_color(label_colors[i]) 
+    
+plt.axis('off')  
+plt.title("ATF Inspections by Field Office, Oct 2021 – Oct 2024", fontsize=16)
+plt.show()
 
 
+
+    # TODO bar chart showing busts per office bar. full administration time period.  one fig per column of interest.
+
+
+
+
+    
 # Region Figs    
 
-    # Line graph aggregated at region level....
-
-dfregion = newdf.groupby(['Region', 'Year',  'Date', 'Month_cat'])[mycolumns].agg('sum').reset_index()
+dfregion = newdf.groupby(['Region', 'Date'])[mycolumns].agg('sum').reset_index()
 myregions = ['South', 'West', 'Northeast', 'Midwest']
 
 for column in mycolumns:
     for region in myregions:
-        make_seasonal_line_plot (df = dfregion, yval = column, ylabel = f'{column}')
-        make_series_line_plot(df = dfregion, yval = column, ylabel = f'{column}')
-
-
-
-# need to add title to plot functions. need to deal with using region for some figs.
-
-    # Inspections
-    
-    # Revocations
-    
-    # Warnings
-
-    
+    # TODO add the time series! need to edit function!
+        
+    # Chronological full period line fig (one line)
+        filtered_df = dfregion[dfregion['Region'] == region]
+        make_series_line_plot(
+            df=filtered_df, yval=column, ylabel=f'{column} in {region}', group_by=None
+        )
+        #too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
     
     
     

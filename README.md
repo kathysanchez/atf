@@ -1,17 +1,11 @@
-# Inspections by Bureau of Alcohol, Tobacco, Firearms and Explosives 
-
+### Inspections by Bureau of Alcohol, Tobacco, Firearms and Explosives 
+- Data source [https://www.atf.gov/firearms/firearms-compliance-inspection-results](https://www.atf.gov/firearms/firearms-compliance-inspection-results)
 
 - **`atf.py`**:  
-  The primary script for cleaning and analyzing data. It handles:
-  - Data preprocessing and merging
-  - Summary statistics
-  - Descriptive statistics
-  - Generating plots and histograms
+  The primary script for cleaning and analyzing data. 
+  - It handles: data preprocessing, summary stats, descriptive stats, generating plots and histograms
   - It outputs 
-    - A cleaned Excel spreadsheet (`.xlsx`) with
-      - The full data panel
-      - Summary stats
-      - Descriptive stats
+    - A cleaned Excel spreadsheet (`.xlsx`) with: the panel, summary stats, descriptive stats
     - Time series in a short video (`.mp4`)
 
 - **`utils.py`**:  
