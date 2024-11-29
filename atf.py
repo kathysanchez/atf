@@ -2,12 +2,13 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from matplotlib.dates import DateFormatter
 import glob
 import os
 import openpyxl
 newdir = "/Volumes/Mac_Passport/projects/personal/atf/"
 os.chdir(newdir)
-from utils import concat_dfs
+#from utils import concat_dfs
 
 
 
@@ -119,8 +120,8 @@ newdf = pd.concat(mydataframes.values(), ignore_index=False) # append
 newdf = newdf.rename(columns={
     "Field Division": "Office",
     "Total FFL Compliance Inspections Completed*": "Inspections",
-    "Total Inspections Resulting in Warning Conference": "Result_Warnings",
-    "Total Number of Inspections Resulting in Revocation": "Result_License_Revocations"
+    "Total Inspections Resulting in Warning Conference": "Warnings",
+    "Total Number of Inspections Resulting in Revocation": "Revoked_Licenses"
 })
 
 newdf['Office'] = newdf['Office'].replace({'Totals:': 'Total'})
@@ -131,11 +132,12 @@ newdf["Office"] = newdf["Office"].str.strip()
 
     # New columns
 
-newdf['Pct_Warnings'] = newdf['Result_Warnings'] / newdf['Inspections']
-newdf['Pct_Revocations'] = newdf['Result_License_Revocations'] / newdf['Inspections']
+newdf['Pct_Warnings'] = newdf['Warnings'] / newdf['Inspections']
+newdf['Pct_Revocations'] = newdf['Revoked_Licenses'] / newdf['Inspections']
 
     # Format month and year to datetime
 
+newdf['Date'] = pd.to_datetime(newdf['Year'] + '-' + newdf['Month'] + '-01')
 newdf["Month_Date"] = pd.to_datetime(newdf["Month"], format="%m")
 #newdf["Month_Name"] = newdf["Month_Date"].dt.month_name()
 newdf["Month_Name"] = newdf["Month_Date"].dt.strftime('%b')
@@ -173,7 +175,10 @@ newdf['Month_cat'] = pd.Categorical(newdf['Month_Name'], categories=month_order,
 
 # Descriptives
 
-df_descriptives = newdf.groupby(['Office', 'Year'])[['Inspections', 'Result_Warnings', 'Result_License_Revocations']].agg(['sum', 'mean', 'median', 'min', 'max'])
+mycolumns = ['Inspections', 'Warnings', 'Revoked_Licenses']
+
+
+df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max'])
 
 ######################################################
 
@@ -189,14 +194,13 @@ year_colors = {
 }
    
 
+
 # National Figs
     
 dftotal = newdf[newdf['Office'] == 'Total'].copy()
 dftotal = dftotal.sort_values(by='Year', ascending=False)
 
-    # Line graph w each year as a line - for seasonality
-
-def make_seasonal_line_plot (df:str, yval: str, ylabel: str):
+def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
     plt.figure(figsize=(10, 6))
     sns.lineplot(data=df, x='Month_cat', y=yval, hue='Year', palette=year_colors, linewidth=2.5)
     plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
@@ -204,53 +208,61 @@ def make_seasonal_line_plot (df:str, yval: str, ylabel: str):
     plt.xlabel(None) 
     plt.legend(title='Year', fontsize=14)
     plt.show()
+    
+    
+def make_series_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(data=df, x='Date', y=yval,linewidth=2.5)
+    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+    date_format = DateFormatter('%b %Y')
+    plt.gca().xaxis.set_major_formatter(date_format)
+    plt.ylabel(ylabel, fontsize=14)
+    plt.xticks(rotation=45) 
+    plt.xlabel(None) 
+    plt.show()
 
-make_seasonal_line_plot (dftotal, yval = 'Inspections' , ylabel = 'Inspections')
-make_seasonal_line_plot (dftotal, yval = 'Result_Warnings' , ylabel = 'Warnings')
-make_seasonal_line_plot (dftotal, yval = 'Result_License_Revocations' , ylabel = 'Revoked Licenses')
+    
 
 
+'''
+for column in mycolumns:
+    make_seasonal_line_plot (df = dftotal, yval = column, ylabel = f'{column}')
+'''
+
+    # Line graph w each year as a line - for seasonality
 
     # Line fig at national level (one line)
 
-# need to make x axis work, maybe need datetime var. goodnight
-
-def make_series_line_plot (df:str, yval: str, ylabel: str):
-    plt.figure(figsize=(10, 6))
-    sns.lineplot(data=df, x='Month_cat', y=yval,linewidth=2.5)
-    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
-    plt.ylabel(ylabel, fontsize=14)
-    plt.xlabel(None) 
-    plt.legend(title='Year', fontsize=14)
-    plt.show()
+for column in mycolumns:
+    make_seasonal_line_plot (df = dftotal, yval = column, ylabel = f'{column}')
+    make_series_line_plot(df = dftotal, yval = column, ylabel = f'{column}')
 
 
-
-        # Inspections
-    
-        # Revocations
-    
-        # Warnings
-
-
-
-# State Figs, Line fig per state (one line per fig) 
+# FieldOffice Figs, Line fig per state (one line per fig) 
     
 dfoffice = newdf.groupby(['Office', 'Year'])[['Inspections', 'Result_Warnings', 'Result_License_Revocations']].agg('sum').reset_index()
-
 dfoffice['Region'] = dfoffice['Office'].map(regions)
 
+
+# Region Figs    
+
+    # Line graph aggregated at region level....
+
+dfregion = newdf.groupby(['Region', 'Year',  'Date', 'Month_cat'])[['Inspections', 'Warnings', 'Revoked_Licenses']].agg('sum').reset_index()
+myregions = ['South', 'West', 'Northeast', 'Midwest']
+
+for region in myregions:
+    for column in mycolumns:
+        make_seasonal_line_plot (df = dfregion, yval = column, ylabel = f'{column}')
+        make_series_line_plot(df = dfregion, yval = column, ylabel = f'{column}')
+
+# need to add title to plot functions. need to deal with using region for some figs.
 
     # Inspections
     
     # Revocations
     
     # Warnings
-
-
-# Region Figs
-    
-    # Line graph by region....
 
     
     
