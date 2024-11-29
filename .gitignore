@@ -2,7 +2,6 @@
 /data_source/
 
 # Ignore output
-/output/
 *.xlsx
 *.docx
 
