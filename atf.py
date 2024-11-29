@@ -13,7 +13,8 @@ newdir = "/Volumes/Mac_Passport/projects/personal/atf/"
 os.chdir(newdir)
 #from utils import concat_dfs
 
-
+######################################################
+# Importing and Cleaning #
 
 # Import downloaded dataframes 
 
@@ -182,14 +183,12 @@ for col in mycolumns:
     newdf[col] = newdf[col].astype(int)
 
 ######################################################
-
-# Descriptives
+# Descriptives #
 
 df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max']) # TODO examine future warning
 
 ######################################################
-
-# Figures
+# Figures #
 
     # Manual color palette for seasonal figs
  
@@ -205,6 +204,7 @@ year_colors = {
     
 dftotal = newdf[newdf['Office'] == 'Total'].copy()
 dftotal = dftotal.sort_values(by='Year', ascending=False)
+
 
 def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
     plt.figure(figsize=(10, 6))
@@ -243,8 +243,6 @@ def make_series_line_plot (df:pd.DataFrame, yval: str, ylabel: str, group_by: Op
 
 
 
-
-
 # National Figs
 
 for column in mycolumns:
@@ -274,6 +272,28 @@ dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
 
     # TODO treemap showing the most busts per office, with region category overlaid. full administration time period. one fig per column of interest.
 
+def make_office_treemap (officecol: str):
+    cmap = plt.cm.Blues  # Base colormap
+    colors = cmap(np.linspace(0.3, 0.8, len(dfoffice)))
+    label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]
+    
+    labels_with_values = [f"{office}\n{officecol}" for office, officecol in zip(dfoffice['Office'], dfoffice[officecol])]
+    plt.figure(figsize=(12, 11))
+    ax = squarify.plot(sizes=dfoffice[officecol], label=labels_with_values, color=colors, alpha=0.8)
+
+    for i, label in enumerate(ax.texts):
+        label.set_fontsize(12)
+        label.set_color(label_colors[i]) 
+    
+    plt.axis('off')  
+    plt.title(f"ATF {officecol} by Field Office, Oct 2021 – Oct 2024", fontsize=16)
+    plt.show()
+    plt.savefig(f"./output/plots/FieldOffice_Treemap_{officecol}.png", dpi=250)
+
+for column in mycolumns:
+    make_office_treemap(column)
+
+'''
 cmap = plt.cm.Blues  # Base colormap
 colors = cmap(np.linspace(0.3, 0.8, len(dfoffice)))
 label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]
@@ -288,7 +308,7 @@ for i, label in enumerate(ax.texts):
 plt.axis('off')  
 plt.title("ATF Inspections by Field Office, Oct 2021 – Oct 2024", fontsize=16)
 plt.show()
-
+'''
 
 
     # TODO bar chart showing busts per office bar. full administration time period.  one fig per column of interest.
