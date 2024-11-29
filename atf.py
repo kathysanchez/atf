@@ -98,6 +98,7 @@ mydataframes['202206'].head()
 
 mydataframes['202403'].columns.tolist()
 
+
 # Append dfs
 
     # First, drop messy rows
@@ -110,6 +111,8 @@ for key, df in mydataframes.items():
     mydataframes[key] = df_cleaned
 
 newdf = pd.concat(mydataframes.values(), ignore_index=False) # append
+
+
 
 # Clean df
 
@@ -165,42 +168,89 @@ month_order = [
 
 newdf['Month_cat'] = pd.Categorical(newdf['Month_Name'], categories=month_order, ordered=True)
 
+
+######################################################
+
+# Descriptives
+
+df_descriptives = newdf.groupby(['Office', 'Year'])[['Inspections', 'Result_Warnings', 'Result_License_Revocations']].agg(['sum', 'mean', 'median', 'min', 'max'])
+
 ######################################################
 
 # Figures
 
-    # Manual color palete from https://www.color-hex.com/color-palette/1037356
-
+    # Manual color palette for seasonal figs
+ 
 year_colors = {
-    '2021': '#00ffcc', 
-    '2022': '#00cccc',  
-    '2023': '#0099cc',  
-    '2024': '#0066cc'
+    '2021': '#4b5276', 
+    '2022': '#8ea4bd',  
+    '2023': '#b8dbd6',  
+    '2024': '#296248'
 }
-    
-# National Figs
+   
 
-    # Line graph w each year as a line - for seasonality
+# National Figs
     
 dftotal = newdf[newdf['Office'] == 'Total'].copy()
 dftotal = dftotal.sort_values(by='Year', ascending=False)
 
+    # Line graph w each year as a line - for seasonality
 
-# Create a line plot
-plt.figure(figsize=(10, 6))
-sns.lineplot(data=dftotal, x='Month_cat', y='Inspections', hue='Year', palette=year_colors, linewidth=2.5)
-plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
-plt.title("ATF Inspection Seasonality", fontsize=16)
-plt.ylabel("Inspections", fontsize=14)
-plt.xlabel(None) 
-plt.legend(title='Year', fontsize=14)
-plt.show()
+def make_seasonal_line_plot (df:str, yval: str, ylabel: str):
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(data=df, x='Month_cat', y=yval, hue='Year', palette=year_colors, linewidth=2.5)
+    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+    plt.ylabel(ylabel, fontsize=14)
+    plt.xlabel(None) 
+    plt.legend(title='Year', fontsize=14)
+    plt.show()
 
+make_seasonal_line_plot (dftotal, yval = 'Inspections' , ylabel = 'Inspections')
+make_seasonal_line_plot (dftotal, yval = 'Result_Warnings' , ylabel = 'Warnings')
+make_seasonal_line_plot (dftotal, yval = 'Result_License_Revocations' , ylabel = 'Revoked Licenses')
+
+
+
+    # Line fig at national level (one line)
+
+# need to make x axis work, maybe need datetime var. goodnight
+
+def make_series_line_plot (df:str, yval: str, ylabel: str):
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(data=df, x='Month_cat', y=yval,linewidth=2.5)
+    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+    plt.ylabel(ylabel, fontsize=14)
+    plt.xlabel(None) 
+    plt.legend(title='Year', fontsize=14)
+    plt.show()
+
+
+
+        # Inspections
+    
+        # Revocations
+    
+        # Warnings
+
+
+
+# State Figs, Line fig per state (one line per fig) 
+    
+dfoffice = newdf.groupby(['Office', 'Year'])[['Inspections', 'Result_Warnings', 'Result_License_Revocations']].agg('sum').reset_index()
+
+dfoffice['Region'] = dfoffice['Office'].map(regions)
+
+
+    # Inspections
+    
+    # Revocations
+    
+    # Warnings
 
 
 # Region Figs
     
-    # Line graph by region
+    # Line graph by region....
 
     
     
