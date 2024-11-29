@@ -1,0 +1,17 @@
+# Ignore the data
+/data_source/
+
+# Ignore output
+/output/
+*.xlsx
+*.docx
+
+# Ignore archived files
+/archive/
+
+# Ignore Python cache files
+/__pycache__/
+*.pyc
+
+# Ignore OS-specific files
+.DS_Store

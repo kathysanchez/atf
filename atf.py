@@ -240,7 +240,7 @@ for column in mycolumns:
 
 # FieldOffice Figs, Line fig per state (one line per fig) 
     
-dfoffice = newdf.groupby(['Office', 'Year'])[['Inspections', 'Result_Warnings', 'Result_License_Revocations']].agg('sum').reset_index()
+dfoffice = newdf.groupby(['Office', 'Year'])[mycolumns].agg('sum').reset_index()
 dfoffice['Region'] = dfoffice['Office'].map(regions)
 
 
@@ -248,13 +248,15 @@ dfoffice['Region'] = dfoffice['Office'].map(regions)
 
     # Line graph aggregated at region level....
 
-dfregion = newdf.groupby(['Region', 'Year',  'Date', 'Month_cat'])[['Inspections', 'Warnings', 'Revoked_Licenses']].agg('sum').reset_index()
+dfregion = newdf.groupby(['Region', 'Year',  'Date', 'Month_cat'])[mycolumns].agg('sum').reset_index()
 myregions = ['South', 'West', 'Northeast', 'Midwest']
 
-for region in myregions:
-    for column in mycolumns:
+for column in mycolumns:
+    for region in myregions:
         make_seasonal_line_plot (df = dfregion, yval = column, ylabel = f'{column}')
         make_series_line_plot(df = dfregion, yval = column, ylabel = f'{column}')
+
+
 
 # need to add title to plot functions. need to deal with using region for some figs.
 
