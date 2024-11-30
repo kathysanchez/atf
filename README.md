@@ -13,7 +13,7 @@ This is a personal project examining ATF inspections from 2021 through 2024. The
 
 `outputs/`
 A folder where I save my working output. 
-    `plots/`
+  - `plots/`
     A subfolder for select plot files.
 
 
