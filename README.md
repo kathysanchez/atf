@@ -1,21 +1,20 @@
 ### Inspections by Bureau of Alcohol, Tobacco, Firearms and Explosives 
 
-Data source: [https://www.atf.gov/firearms/firearms-compliance-inspection-results](https://www.atf.gov/firearms/firearms-compliance-inspection-results)
+This is a personal project examining ATF inspections from 2021 through 2024. The data are from [https://www.atf.gov/firearms/firearms-compliance-inspection-results](https://www.atf.gov/firearms/firearms-compliance-inspection-results)
 
-`atf.py` 
-  The primary script for cleaning and analyzing data. I am just working on inspections for now, not the lists of federal firearms licensees.
-  - It handles: data preprocessing, summary stats, descriptive stats, generating plots and histograms
+`atf.py`  
+  The primary script for cleaning and analyzing data. It handles: data preprocessing, summary stats, descriptive stats, generating plots.
 
-`ATF_Inspection_Figures.qmd` 
+`ATF_Inspection_Figures.qmd`  
   A Quarto Markdown file for rendering a pdf (`.pdf`) for easily viewing figures.
 
 `ATF_Inspection_Figures.pdf`  
-  The rendered output from `ATF_Inspection_Figures.pdf` containing additional plots for easy viewing.
+  The rendered output from `ATF_Inspection_Figures.pdf` containing friendly select plots. 
 
 `outputs/`
-A folder where I save my working output.
+A folder where I save my working output. 
     `plots/`
-    A subfolder for plot files.
+    A subfolder for select plot files.
 
 
 
