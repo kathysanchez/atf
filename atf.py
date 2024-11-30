@@ -206,13 +206,15 @@ dftotal = newdf[newdf['Office'] == 'Total'].copy()
 dftotal = dftotal.sort_values(by='Year', ascending=False)
 
 
-def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str):
+def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str,  save_path: str = None):
     plt.figure(figsize=(10, 6))
     sns.lineplot(data=df, x='Month_cat', y=yval, hue='Year', palette=year_colors, linewidth=2.5, errorbar=None)
     plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
     plt.ylabel(ylabel, fontsize=14)
     plt.xlabel(None) 
     plt.legend(title='Year', fontsize=14)
+    if save_path:
+       plt.savefig(save_path, bbox_inches='tight', dpi=300)
     plt.show()
     
     
@@ -248,16 +250,17 @@ def make_series_line_plot (df:pd.DataFrame, yval: str, ylabel: str, group_by: Op
 for column in mycolumns:
     # Seasonality line fig (one line per year)
     make_seasonal_line_plot (df = dftotal, yval = column, ylabel = f'{column}')
-    
     # Chronological full period line fig (one line)
     make_series_line_plot(df = dftotal, yval = column, ylabel = f'{column}')
+
+make_seasonal_line_plot(df=dftotal, yval='Inspections', ylabel='Inspections', save_path="./output/plots/National_Inspection_Seasonality.png")
 
 
 
 
 
 # Field Office Figs
-    '''
+'''
 dfoffice_annual = newdf.groupby(['Office', 'Year'])[mycolumns].agg('sum').reset_index()
 dfoffice_annual['Region'] = dfoffice_annual['Office'].map(regions)
 '''
@@ -265,33 +268,35 @@ dfoffice_annual['Region'] = dfoffice_annual['Office'].map(regions)
 dfoffice = newdf.groupby(['Office'])[mycolumns].agg('sum').reset_index()
 
 dfoffice['Region'] = dfoffice['Office'].map(regions)
-dfoffice = dfoffice.dropna(subset=['Region']) # I tried dropping the Total row in many many ways but could not completely get rid of remnants. shows up as Total has 0 values.
+dfoffice = dfoffice.dropna(subset=['Region']) # I tried dropping the Total row but could not completely get rid of remnants. value_counts() shows Total has 0 values.
 dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
 
-                                        # Line fig per state (one line per fig) 
+    # Treemap with office segments
 
-    # TODO treemap showing the most busts per office, with region category overlaid. full administration time period. one fig per column of interest.
-
-def make_office_treemap (officecol: str):
-    cmap = plt.cm.Blues  # Base colormap
+def make_office_treemap (officecol: str, save_path: str = None):
+    cmap = plt.cm.Blues  
     colors = cmap(np.linspace(0.3, 0.8, len(dfoffice)))
-    label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]
+    label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
     
     labels_with_values = [f"{office}\n{officecol}" for office, officecol in zip(dfoffice['Office'], dfoffice[officecol])]
     plt.figure(figsize=(12, 11))
     ax = squarify.plot(sizes=dfoffice[officecol], label=labels_with_values, color=colors, alpha=0.8)
-
+    
     for i, label in enumerate(ax.texts):
         label.set_fontsize(12)
         label.set_color(label_colors[i]) 
     
     plt.axis('off')  
-    plt.title(f"ATF {officecol} by Field Office, Oct 2021 – Oct 2024", fontsize=16)
+    formatted_column_name = f"{officecol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
+    plt.title(f"ATF {formatted_column_name} by Field Office, Oct 2021 – Oct 2024", fontsize=16)
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    
     plt.show()
-    plt.savefig(f"./output/plots/FieldOffice_Treemap_{officecol}.png", dpi=250)
-
+    
 for column in mycolumns:
-    make_office_treemap(column)
+    make_office_treemap(column, save_path = f"./output/plots/FieldOffice_Treemap_{column}.png")
 
 '''
 cmap = plt.cm.Blues  # Base colormap
@@ -311,7 +316,7 @@ plt.show()
 '''
 
 
-    # TODO bar chart showing busts per office bar. full administration time period.  one fig per column of interest.
+    # TODO Inspections bar chart with bar per Field Office. Full administration time period.
 
 
 
@@ -324,14 +329,14 @@ myregions = ['South', 'West', 'Northeast', 'Midwest']
 
 for column in mycolumns:
     for region in myregions:
-    # TODO add the time series! need to edit function!
+    # TODO add the time series! 
         
     # Chronological full period line fig (one line)
         filtered_df = dfregion[dfregion['Region'] == region]
         make_series_line_plot(
             df=filtered_df, yval=column, ylabel=f'{column} in {region}', group_by=None
         )
-        #too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
+        # Too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
     
     
     

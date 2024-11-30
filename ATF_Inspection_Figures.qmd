@@ -1,0 +1,54 @@
+---
+format: 
+    pdf:
+        title: "Inspections of Firearms Sellers Under the White House's 2021 Zero Tolerance Policy"
+        date: today
+        date-format: YYYY-MM-DD
+        author: "Kathy Sanchez"
+        toc: false
+        mainfont: Arial
+execute:
+  eval: true
+  echo: false
+  warning: false
+engine: xelatex
+---
+
+
+The Biden Administration announced in [June 2021](https://www.whitehouse.gov/briefing-room/statements-releases/2021/06/23/fact-sheet-biden-harris-administration-announces-comprehensive-strategy-to-prevent-and-respond-to-gun-crime-and-ensure-public-safety/) that it would ramp up inspections of licensed firearm sellers as part of a wider gun control and public safety strategy. The White House touted the increased inspections, explaining that it wanted to "crack down on rogue gun dealers" and had "zero tolerance" for them.
+
+Here, I quickly explore limited publicly available inspection data that the Bureau of Alcohol, Tobacco, Firearms and Explosives launched on its website soon after the White House announced its strategy.
+
+\newpage
+
+### The Number of Inspections Grew from 2022 to 2024 
+
+The number of ATF inspections increased each year. 
+
+ATF inspections also have seasonality. The ATF inspected firearms sellers the most during late summers.
+
+Figure 1 
+ 
+![](./output/plots/Seasonality_Inspections.png)
+
+\newpage
+
+### The Number of Inspections Varied by Field Office
+
+Figure 2 
+ 
+![](./output/plots/FieldOffice_Treemap_Inspections.png)
+
+\newpage
+
+### Inspection Results Also Varied by Field Office
+
+Figure 3 
+ 
+![](./output/plots/FieldOffice_Treemap_Warnings.png)
+
+\newpage
+
+Figure 4 
+ 
+![](./output/plots/FieldOffice_Treemap_Revoked_Licenses.png)
