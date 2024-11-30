@@ -273,22 +273,27 @@ dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
 
     # Treemap with office segments
 
-def make_office_treemap (officecol: str, save_path: str = None):
+def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = None):
     cmap = plt.cm.Blues  
-    colors = cmap(np.linspace(0.3, 0.8, len(dfoffice)))
+    colors = cmap(np.linspace(0.3, 0.8, len(df)))
     label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
     
-    labels_with_values = [f"{office}\n{officecol}" for office, officecol in zip(dfoffice['Office'], dfoffice[officecol])]
+    labels_with_values = []
+    for group, value in zip(df[groupcol], df[dfcol]):
+        labels_with_values.append(f"{group}\n{value:,.0f}") 
+    
+    [f"{groupcol}\n{dfcol}" for groupcol, dfcol in zip(df[groupcol], df[dfcol])]
     plt.figure(figsize=(11, 12))
-    ax = squarify.plot(sizes=dfoffice[officecol], label=labels_with_values, color=colors, alpha=0.8)
+    ax = squarify.plot(sizes=df[dfcol], label=labels_with_values, color=colors, alpha=0.8)
     
     for i, label in enumerate(ax.texts):
         label.set_fontsize(12)
         label.set_color(label_colors[i]) 
     
     plt.axis('off')  
-    formatted_column_name = f"{officecol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
-    plt.title(f"ATF {formatted_column_name} by Field Office, Oct 2021 – Oct 2024", fontsize=16)
+    formatted_column_name = f"{dfcol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
+    formatted_group_name = f"{groupcol.replace('_', ' ').title()}" # Remove underscore from Field Office
+    plt.title(f"ATF {formatted_column_name} by {formatted_group_name}, Oct 2021 – Oct 2024", fontsize=16)
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -296,47 +301,33 @@ def make_office_treemap (officecol: str, save_path: str = None):
     plt.show()
     
 for column in mycolumns:
-    make_office_treemap(column, save_path = f"./output/plots/FieldOffice_Treemap_{column}.png")
+    make_treemap(df = dfoffice, dfcol = column, groupcol = 'Office', save_path = f"./output/plots/FieldOffice_Treemap_{column}.png")
 
-'''
-cmap = plt.cm.Blues  # Base colormap
-colors = cmap(np.linspace(0.3, 0.8, len(dfoffice)))
-label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]
-labels_with_values = [f"{office}\n{inspections}" for office, inspections in zip(dfoffice['Office'], dfoffice['Inspections'])]
-plt.figure(figsize=(12, 11))
-ax = squarify.plot(sizes=dfoffice['Inspections'], label=labels_with_values, color=colors, alpha=0.8)
-
-for i, label in enumerate(ax.texts):
-    label.set_fontsize(12)
-    label.set_color(label_colors[i]) 
-    
-plt.axis('off')  
-plt.title("ATF Inspections by Field Office, Oct 2021 – Oct 2024", fontsize=16)
-plt.show()
-'''
 
 
     # TODO Inspections bar chart with bar per Field Office. Full administration time period.
 
 
-
-
     
 # Region Figs    
 
-dfregion = newdf.groupby(['Region', 'Date'])[mycolumns].agg('sum').reset_index()
+dfregion_series = newdf.groupby(['Region', 'Date'])[mycolumns].agg('sum').reset_index()
 myregions = ['South', 'West', 'Northeast', 'Midwest']
+dfregion_sum = newdf.groupby(['Region'])[mycolumns].agg('sum').reset_index()
+
 
 for column in mycolumns:
+    # Treemap
+    dfregion_sum = dfregion_sum.sort_values(by=column, ascending=False)
+    make_treemap(df = dfregion_sum, dfcol = column, groupcol = 'Region', save_path = f"./output/plots/Region_Treemap_{column}.png")
     for region in myregions:
-    # TODO add the time series! 
-        
-    # Chronological full period line fig (one line)
-        filtered_df = dfregion[dfregion['Region'] == region]
+        # Time series
+        filtered_df = dfregion_series[dfregion_series['Region'] == region]
         make_series_line_plot(
             df=filtered_df, yval=column, ylabel=f'{column} in {region}', group_by=None
         )
-        # Too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
-    
-    
+                # Too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
+        
+        # TODO call seasonality function
+
     
