@@ -279,7 +279,7 @@ def make_office_treemap (officecol: str, save_path: str = None):
     label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
     
     labels_with_values = [f"{office}\n{officecol}" for office, officecol in zip(dfoffice['Office'], dfoffice[officecol])]
-    plt.figure(figsize=(12, 11))
+    plt.figure(figsize=(11, 12))
     ax = squarify.plot(sizes=dfoffice[officecol], label=labels_with_values, color=colors, alpha=0.8)
     
     for i, label in enumerate(ax.texts):
