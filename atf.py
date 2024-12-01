@@ -183,12 +183,12 @@ for col in mycolumns:
     newdf[col] = newdf[col].astype(int)
 
 ######################################################
-# Descriptives #
+# Descriptives 
 
 df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max']) # TODO examine future warning
 
 ######################################################
-# Figures #
+# Figures 
 
     # Manual color palette for seasonal figs
  
@@ -201,7 +201,16 @@ year_colors = {
    
 
 
+region_colors = {
+    'Midwest': '#4b5276', 
+    'Northeast': '#8ea4bd',  
+    'South': '#b8dbd6',  
+    'West': '#296248'
+}
     
+newdf['Color'] = newdf['Region'].map(region_colors)
+
+
 dftotal = newdf[newdf['Office'] == 'Total'].copy()
 dftotal = dftotal.sort_values(by='Year', ascending=False)
 
@@ -256,7 +265,7 @@ for column in mycolumns:
 make_seasonal_line_plot(df=dftotal, yval='Inspections', ylabel='Inspections', save_path="./output/plots/National_Inspection_Seasonality.png")
 
 
-
+    # TODO Add dotted line to Inspections 
 
 
 # Field Office Figs
@@ -329,5 +338,42 @@ for column in mycolumns:
                 # Too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
         
         # TODO call seasonality function
+
+
+
+dfoffice = dfoffice.sort_values(by=['Region', 'Inspections'], ascending=[False, True]).reset_index(drop=True)
+
+
+def make_clustered_hbar (df:pd.DataFrame, 
+                         ycol: str, 
+                         xcol: str, 
+                         groupcol: str, 
+                         save_path: str = None):
+    df = df.sort_values(by=[groupcol, xcol], ascending=[False, True]).reset_index(drop=True)
+    plt.figure(figsize=(6, 8))
+    plt.barh(df[ycol], df[xcol], color=df['Color']) 
+    
+    formatted_x_label = f"{xcol.replace('_', ' ').title()}" # Remove underscore from Revoked Licenses
+    plt.title(f"ATF {formatted_x_label} by Region, Oct 2021 – Oct 2024", fontsize=16)
+    plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+
+    handles = []
+    for region, color in region_colors.items():
+        line = plt.Line2D([0], [0], color=color, lw=8, label=region)
+        handles.append(line)
+    plt.legend(handles=handles, fontsize=12,  frameon=False, loc=(0.65, 0.65))
+    
+    ax = plt.gca()  
+    for spine_name, spine in ax.spines.items():
+        if spine_name != 'bottom':
+            spine.set_visible(False) 
+    
+    plt.tight_layout()
+    plt.show()
+
+for column in mycolumns:
+    make_clustered_hbar(df=dfoffice, ycol = 'Office', xcol = column, groupcol = 'Region')    
+
+make_clustered_hbar(df=dfoffice, ycol = 'Office', xcol = 'Inspections', groupcol = 'Region', save_path = "./output/plots/Region_Bar_Inspections.png")    
 
     
