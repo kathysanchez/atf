@@ -29,11 +29,11 @@ Figure 1.
  
 ![](./output/plots/Seasonality_Inspections.png)
 
+\newpage
+
 # The Number of Inspections Varied by Field Office
 
 Dallas, Kansas City and Columbus—cities in the south and midwest—had the most inspections over the full period of data (Figures 2 and 3). Field offices in the west and northeast tended to have fewer inspections. These differences are likely because ATF field offices receive more funding when they have more licensees in their area.
-
-\newpage
 
 Figure 2. 
  
@@ -45,20 +45,27 @@ Figure 3.
 
 ![](./output/plots/Region_Treemap_Inspections.png)
 
+\newpage
 
-# Inspection Results Also Varied by Field Office
+Looking at offices by region in Figure 4 shows more offices in the south than the other regions.
 
-Field offices that issued the most warnings and revoked the most licenses (Figures 4 and 5) were similar to those that had the most inspections (Figure 2). These similarities suggest that so-called rogue gun dealers are not concentrated in or attracted to any particular area.
+Figure 4. 
+
+![](./output/plots/Region_Bar_Inspections.png){width=500}
 
 \newpage
 
-Figure 4. 
+# Inspection Results Also Varied by Field Office
+
+Field offices that issued the most warnings and revoked the most licenses (Figures 5 and 6) were similar to those that had the most inspections (Figure 2). These similarities suggest that so-called rogue gun dealers are not concentrated in or attracted to any particular area.
+
+Figure 5. 
  
 ![](./output/plots/FieldOffice_Treemap_Warnings.png)
 
 \newpage
 
-Figure 5. 
+Figure 6. 
  
 ![](./output/plots/FieldOffice_Treemap_Revoked_Licenses.png)
 

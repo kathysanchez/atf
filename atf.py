@@ -283,6 +283,7 @@ dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
     # Treemap with office segments
 
 def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = None):
+    df = df.sort_values(by=dfcol, ascending=False)
     cmap = plt.cm.Blues  
     colors = cmap(np.linspace(0.3, 0.8, len(df)))
     label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
@@ -292,13 +293,17 @@ def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = N
         labels_with_values.append(f"{group}\n{value:,.0f}") 
     
     [f"{groupcol}\n{dfcol}" for groupcol, dfcol in zip(df[groupcol], df[dfcol])]
-    plt.figure(figsize=(11, 12))
+    plt.figure(figsize=(12, 9))
     ax = squarify.plot(sizes=df[dfcol], label=labels_with_values, color=colors, alpha=0.8)
     
     for i, label in enumerate(ax.texts):
         label.set_fontsize(12)
         label.set_color(label_colors[i]) 
-    
+    '''
+    threshold = 0.02 * df[dfcol].sum() 
+    for i, rect in enumerate(ax.texts):
+        rect.set_fontsize(10 if sizes[i] >= threshold else 6) 
+        '''
     plt.axis('off')  
     formatted_column_name = f"{dfcol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
     formatted_group_name = f"{groupcol.replace('_', ' ').title()}" # Remove underscore from Field Office
@@ -369,6 +374,10 @@ def make_clustered_hbar (df:pd.DataFrame,
             spine.set_visible(False) 
     
     plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    
     plt.show()
 
 for column in mycolumns:
