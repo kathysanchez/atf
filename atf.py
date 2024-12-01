@@ -381,7 +381,8 @@ def make_clustered_hbar (df:pd.DataFrame,
     plt.show()
 
 for column in mycolumns:
-    make_clustered_hbar(df=dfoffice, ycol = 'Office', xcol = column, groupcol = 'Region')    
+    make_clustered_hbar(df=dfoffice, ycol = 'Office', xcol = column, groupcol = 'Region', save_path = f"./output/plots/Region_Bar_{column}.png")    
+
 
 make_clustered_hbar(df=dfoffice, ycol = 'Office', xcol = 'Inspections', groupcol = 'Region', save_path = "./output/plots/Region_Bar_Inspections.png")    
 

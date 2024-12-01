@@ -33,7 +33,7 @@ Figure 1.
 
 # The Number of Inspections Varied by Field Office
 
-Dallas, Kansas City and Columbus—cities in the south and midwest—had the most inspections over the full period of data (Figures 2 and 3). Field offices in the west and northeast tended to have fewer inspections. These differences are likely because ATF field offices receive more funding when they have more licensees in their area.
+Dallas, Kansas City and Columbus—cities in the south and midwest—had the most inspections over the full period of data (Figures 2 and 3). Field offices in the west and northeast tended to have fewer inspections. These differences are likely because ATF field offices receive more funding when they have more licensees in their area. ATF has likely set up more offices where they have more licensees.
 
 Figure 2. 
  
