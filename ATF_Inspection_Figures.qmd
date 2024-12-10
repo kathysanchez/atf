@@ -27,7 +27,7 @@ The number of ATF inspections grew each year. Figure 1 shows this increase, acco
 
 Figure 1. 
  
-![](./output/plots/Seasonality_Inspections.png)
+![](./output/plots/National_Inspection_Seasonality.png)
 
 \newpage
 

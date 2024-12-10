@@ -193,10 +193,10 @@ df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean
     # Manual color palette for seasonal figs
  
 year_colors = {
-    '2021': '#4b5276', 
-    '2022': '#8ea4bd',  
-    '2023': '#b8dbd6',  
-    '2024': '#296248'
+    '2021': '#D4F1F4', 
+    '2022': '#75E6DA',  
+    '2023': '#189AB4',  
+    '2024': '#05445E'
 }
    
 
@@ -221,7 +221,19 @@ def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str,  save_path
     plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
     plt.ylabel(ylabel, fontsize=14)
     plt.xlabel(None) 
-    plt.legend(title='Year', fontsize=14)
+    #Legend
+    plt.legend(fontsize=14, frameon=False, facecolor='white', framealpha=0.9)
+    # Remove chart borders
+    ax = plt.gca()  # Get the current axis
+    for spine_name, spine in ax.spines.items():
+            spine.set_visible(False)
+    # Add minimal grid lines
+    plt.grid(visible=True, which='major', linestyle='--', linewidth=0.4, alpha=0.7)
+    ax.tick_params(axis='x', length=0)  # Remove ticks from x axis
+    ax.tick_params(axis='y', length=0)  # Remove ticks from y axis
+    # Remove ylabel underscores
+    ylabel = f"{ylabel.replace('_', ' ')}" 
+    plt.ylabel(ylabel, fontsize=14)
     if save_path:
        plt.savefig(save_path, bbox_inches='tight', dpi=300)
     plt.show()
@@ -247,11 +259,20 @@ def make_series_line_plot (df:pd.DataFrame, yval: str, ylabel: str, group_by: Op
     date_format = DateFormatter('%b %Y')
     plt.gca().xaxis.set_major_formatter(date_format)
     
+    # Remove chart borders
+    ax = plt.gca()  # Get the current axis
+    for spine_name, spine in ax.spines.items():
+            spine.set_visible(False)
+    # Add minimal grid lines
+    plt.grid(visible=True, which='major', linestyle='--', linewidth=0.4, alpha=0.7)
+    ax.tick_params(axis='x', length=0)  # Remove ticks from x axis
+    ax.tick_params(axis='y', length=0)  # Remove ticks from y axis
+    # Remove ylabel underscores
+    ylabel = f"{ylabel.replace('_', ' ')}"
     plt.ylabel(ylabel, fontsize=14)
     plt.xlabel(None) 
     plt.xticks(rotation=45) 
     plt.show()
-
 
 
 # National Figs
@@ -286,8 +307,10 @@ def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = N
     df = df.sort_values(by=dfcol, ascending=False)
     cmap = plt.cm.Blues  
     colors = cmap(np.linspace(0.3, 0.8, len(df)))
+        # TODO change to dark to light
+
     label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
-    
+
     labels_with_values = []
     for group, value in zip(df[groupcol], df[dfcol]):
         labels_with_values.append(f"{group}\n{value:,.0f}") 
@@ -299,6 +322,7 @@ def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = N
     for i, label in enumerate(ax.texts):
         label.set_fontsize(12)
         label.set_color(label_colors[i]) 
+    # TODO remove little square labels? Make text size dynamic?
     '''
     threshold = 0.02 * df[dfcol].sum() 
     for i, rect in enumerate(ax.texts):
@@ -342,7 +366,7 @@ for column in mycolumns:
         )
                 # Too messy to overlay all region lines on a single chrono time series fig (e.g., one fig for inspections, etc.)
         
-        # TODO call seasonality function
+        # TODO call make_seasonal_line_plot
 
 
 
@@ -366,7 +390,7 @@ def make_clustered_hbar (df:pd.DataFrame,
     for region, color in region_colors.items():
         line = plt.Line2D([0], [0], color=color, lw=8, label=region)
         handles.append(line)
-    plt.legend(handles=handles, fontsize=12,  frameon=False, loc=(0.65, 0.65))
+    plt.legend(handles=handles, fontsize=12, frameon=False, loc=(0.65, 0.65))
     
     ax = plt.gca()  
     for spine_name, spine in ax.spines.items():
