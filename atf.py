@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.dates import DateFormatter
-import glob
+import glob # pip install glob2
 import os
 import openpyxl
 from typing import Optional
@@ -185,7 +185,7 @@ for col in mycolumns:
 ######################################################
 # Descriptives 
 
-df_descriptives = newdf.groupby(['Office', 'Year'])[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max']) # TODO examine future warning
+df_descriptives = newdf.groupby(['Office', 'Year'], observed=True)[mycolumns].agg(['sum', 'mean', 'median', 'min', 'max']) # TODO examine future warning
 
 ######################################################
 # Figures 
@@ -295,9 +295,9 @@ dfoffice_annual = newdf.groupby(['Office', 'Year'])[mycolumns].agg('sum').reset_
 dfoffice_annual['Region'] = dfoffice_annual['Office'].map(regions)
 '''
 
-dfoffice = newdf.groupby(['Office'])[mycolumns].agg('sum').reset_index()
+dfoffice = newdf.groupby(['Office', 'Region', 'Color'], observed=True)[mycolumns].agg('sum').reset_index()
+#dfoffice['Region'] = dfoffice['Office'].map(regions)
 
-dfoffice['Region'] = dfoffice['Office'].map(regions)
 dfoffice = dfoffice.dropna(subset=['Region']) # I tried dropping the Total row but could not completely get rid of remnants. value_counts() shows Total has 0 values.
 dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
 
