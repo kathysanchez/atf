@@ -14,10 +14,9 @@ execute:
 engine: xelatex
 ---
 
+This document shares key findings from my analysis of publicly available Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) inspection data. The ATF, which conducts the nation's inspections of licensed firearms sellers (Federal Firearms Licenses or FFLs), launched these limited data on its website soon after the White House announced its "zero tolerance" policy.
 
-The Biden Administration announced in [June 2021](https://www.whitehouse.gov/briefing-room/statements-releases/2021/06/23/fact-sheet-biden-harris-administration-announces-comprehensive-strategy-to-prevent-and-respond-to-gun-crime-and-ensure-public-safety/) that it would ramp up inspections of licensed firearms-sellers as part of a wider gun control and public safety strategy. The White House touted the increased inspections, explaining that it wanted to "crack down on rogue gun dealers" and had "zero tolerance" for them.
-
-Here, I briefly explore limited publicly available inspection data. The Bureau of Alcohol, Tobacco, Firearms and Explosives, which conducts the inspections, launched these data on its website soon after the White House's announcement.
+The Biden Administration announced this policy in [June 2021](https://www.whitehouse.gov/briefing-room/statements-releases/2021/06/23/fact-sheet-biden-harris-administration-announces-comprehensive-strategy-to-prevent-and-respond-to-gun-crime-and-ensure-public-safety/), explaining that it had zero tolerance for "rogue gun dealers" and planned to "crack down" on them with increased inspections as part of a wider gun control and public safety strategy. So I examined the number of inspections from October 2021 through 2024 to measure the ATF's response under the Biden Administration.
 
 \newpage
 

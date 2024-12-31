@@ -222,15 +222,15 @@ def make_seasonal_line_plot (df:pd.DataFrame, yval: str, ylabel: str,  save_path
     plt.ylabel(ylabel, fontsize=14)
     plt.xlabel(None) 
     #Legend
-    plt.legend(fontsize=14, frameon=False, facecolor='white', framealpha=0.9)
+    plt.legend(fontsize=12, frameon=False, facecolor='white', framealpha=0.9)
     # Remove chart borders
     ax = plt.gca()  # Get the current axis
     for spine_name, spine in ax.spines.items():
             spine.set_visible(False)
     # Add minimal grid lines
     plt.grid(visible=True, which='major', linestyle='--', linewidth=0.4, alpha=0.7)
-    ax.tick_params(axis='x', length=0)  # Remove ticks from x axis
-    ax.tick_params(axis='y', length=0)  # Remove ticks from y axis
+    ax.tick_params(axis='x', length=0, labelsize=12)  # Remove ticks from x axis
+    ax.tick_params(axis='y', length=0, labelsize=12)  # Remove ticks from y axis
     # Remove ylabel underscores
     ylabel = f"{ylabel.replace('_', ' ')}" 
     plt.ylabel(ylabel, fontsize=14)
@@ -331,7 +331,7 @@ def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = N
     plt.axis('off')  
     formatted_column_name = f"{dfcol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
     formatted_group_name = f"{groupcol.replace('_', ' ').title()}" # Remove underscore from Field Office
-    plt.title(f"ATF {formatted_column_name} by {formatted_group_name}, Oct 2021 – Oct 2024", fontsize=16)
+    plt.title(f"ATF {formatted_column_name} by {formatted_group_name}, Oct 2021 – Nov 2024", fontsize=16)
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -383,7 +383,7 @@ def make_clustered_hbar (df:pd.DataFrame,
     plt.barh(df[ycol], df[xcol], color=df['Color']) 
     
     formatted_x_label = f"{xcol.replace('_', ' ').title()}" # Remove underscore from Revoked Licenses
-    plt.title(f"ATF {formatted_x_label} by Region, Oct 2021 – Oct 2024", fontsize=16)
+    plt.title(f"ATF {formatted_x_label} by Region, Oct 2021 – Nov 2024", fontsize=16)
     plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
 
     handles = []
