@@ -146,6 +146,14 @@ newdf["Month_Date"] = pd.to_datetime(newdf["Month"], format="%m")
 #newdf["Month_Name"] = newdf["Month_Date"].dt.month_name()
 newdf["Month_Name"] = newdf["Month_Date"].dt.strftime('%b')
 
+    # Latest month
+
+df_dates = newdf[['Date', 'Month_Name', 'Year']].drop_duplicates().reset_index(drop=True)
+latest_month = df_dates.loc[df_dates['Date'].idxmax(), 'Month_Name']
+latest_year = str(df_dates['Year'].max())
+
+latest_date = latest_month + " " + latest_year
+
     # Make region var
 
 regions = {
@@ -173,6 +181,9 @@ month_order = [
 ]
 
 newdf['Month_cat'] = pd.Categorical(newdf['Month_Name'], categories=month_order, ordered=True)
+
+    # Month string
+
 
 
     # Int
@@ -331,7 +342,7 @@ def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = N
     plt.axis('off')  
     formatted_column_name = f"{dfcol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
     formatted_group_name = f"{groupcol.replace('_', ' ').title()}" # Remove underscore from Field Office
-    plt.title(f"ATF {formatted_column_name} by {formatted_group_name}, Oct 2021 – Nov 2024", fontsize=16)
+    plt.title(f"ATF {formatted_column_name} by {formatted_group_name}, Oct 2021 – {latest_date}", fontsize=16)
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -383,7 +394,7 @@ def make_clustered_hbar (df:pd.DataFrame,
     plt.barh(df[ycol], df[xcol], color=df['Color']) 
     
     formatted_x_label = f"{xcol.replace('_', ' ').title()}" # Remove underscore from Revoked Licenses
-    plt.title(f"ATF {formatted_x_label} by Region, Oct 2021 – Nov 2024", fontsize=16)
+    plt.title(f"ATF {formatted_x_label} by Region, Oct 2021 – {latest_date}", fontsize=16)
     plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
 
     handles = []
