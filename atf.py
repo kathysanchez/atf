@@ -315,30 +315,40 @@ dfoffice = dfoffice.sort_values(by='Inspections', ascending=False)
     # Treemap with office segments
 
 def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = None):
+    
+    # Define colors
+
     df = df.sort_values(by=dfcol, ascending=False)
     cmap = plt.cm.Blues  
-    colors = cmap(np.linspace(0.3, 0.8, len(df)))
-        # TODO change to dark to light
+    colors = cmap(np.linspace(0.3, 0.8, len(df))[::-1]) # Assign colors from dark to light
 
-    label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
+    # Define labels (city and values)
 
     labels_with_values = []
     for group, value in zip(df[groupcol], df[dfcol]):
         labels_with_values.append(f"{group}\n{value:,.0f}") 
     
-    [f"{groupcol}\n{dfcol}" for groupcol, dfcol in zip(df[groupcol], df[dfcol])]
+    # Apply figure basics: size, colors and labels
+
     plt.figure(figsize=(12, 9))
+
     ax = squarify.plot(sizes=df[dfcol], label=labels_with_values, color=colors, alpha=0.8)
     
+    label_colors = ['white' if np.mean(color[:3]) < 0.5 else 'black' for color in colors]    
+
     for i, label in enumerate(ax.texts):
-        label.set_fontsize(12)
+        #label.set_fontsize(14)
         label.set_color(label_colors[i]) 
-    # TODO remove little square labels? Make text size dynamic?
-    '''
-    threshold = 0.02 * df[dfcol].sum() 
-    for i, rect in enumerate(ax.texts):
-        rect.set_fontsize(10 if sizes[i] >= threshold else 6) 
-        '''
+    
+    # Make rectangle labels dynamic
+    
+    threshold = 0.02 * df[dfcol].sum()  # Define threshold based on the total size
+    for i, rectangle in enumerate(ax.texts):
+        if df[dfcol].iloc[i] < threshold:
+            rectangle.set_fontsize(10)  # Remove label for small rectangles
+        else:
+            rectangle.set_fontsize(14)  # Adjust text size for larger rectangles
+    
     plt.axis('off')  
     formatted_column_name = f"{dfcol.replace('_', ' ').title()}" # Remove underscore from Revoked_Licenses
     formatted_group_name = f"{groupcol.replace('_', ' ').title()}" # Remove underscore from Field Office
@@ -351,7 +361,6 @@ def make_treemap (df:pd.DataFrame, dfcol: str, groupcol: str, save_path: str = N
     
 for column in mycolumns:
     make_treemap(df = dfoffice, dfcol = column, groupcol = 'Office', save_path = f"./output/plots/FieldOffice_Treemap_{column}.png")
-
 
 
     # TODO Inspections bar chart with bar per Field Office. Full administration time period.
