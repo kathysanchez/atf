@@ -1,8 +1,24 @@
 
-import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import time  # Add delays between requests
+import requests
+
+'''from selenium import webdriver # Need to install 
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+# Path to chromedriver 
+service = Service('/Applications/geckodriver')
+options = Options()
+
+# Initialize the WebDriver
+driver = webdriver.Firefox(service=service, options=options)
+wait = WebDriverWait(driver, 10) 
+'''
 
 '''
 states = ["alabama", "alabama", "arizona", "california", "colorado", 
@@ -19,16 +35,17 @@ states = ["alabama", "alabama", "arizona", "california", "colorado",
 
 #years = ["2020", "2021", "2022", "2023", "2024"]
 '''
+
 states = ["district-columbia", "oklahoma"]
-years = ["2024"]
+years = ["2023"]
 
 
 # Define the webpage URL
 base_url = "https://www.atf.gov/resource-center/firearms-trace-data-{}-{}"
 
-all_data = []
 
-#webdriver from selenium package. learn async
+
+all_data = []
 
 # Loop through each state and year
 for state in states:
@@ -37,25 +54,34 @@ for state in states:
         print(f"Begin scraping: {url}")
 
         # Send request to fetch content
-        response = requests.get(url)
+        #driver.get(url)
+        #response = requests.get(url)
         
-        # Review fetched content
+        # Wait for the body to load
+        #wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        
         '''
+        # Review fetched content
         with open("temp.html", "w+") as file:
             file.write(response.text)
+        '''       
         '''
-        # Check for successful fetch
-        if response.status_code == 200:
-            print(f"{state} {year}: Request successful.")
-        else:
-            print(f"Failed to fetch {url} (Status Code: {response.status_code})")            
-
+        # Review fetched content
+        with open("temp.html", "w", encoding="utf-8") as file:
+            file.write(driver.page_source)
+        '''
+        
+        # Get page source
+        #page_source = driver.page_source
+        
+        response = requests.get(url)
+        
         # Assign fetched text to soup
         soup = BeautifulSoup(response.text, "html.parser")
                         
         # Find all h4 elements
         h4_elements = soup.find_all("h4")
-        print(h4_elements)
+        #print(f"{state} {year} h4 found: {h4_elements}")
 
         # Loop through each h4 and find the following table            
         for h4 in h4_elements:
@@ -91,7 +117,7 @@ for state in states:
                     else:
                         print("No valid <th> or <td> in this row.")
             else:
-                print(f"No table: {section_title} for {state} {year}")
+                print(f"{state} {year}: No table found for {section_title}.")
     
         time.sleep(1)  # Avoid overwhelming the server
 
