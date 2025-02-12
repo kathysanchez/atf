@@ -3,22 +3,12 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time  # Add delays between requests
 import requests
+import os
 
-'''from selenium import webdriver # Need to install 
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+print(os.getcwd())
+os.chdir('/Volumes/Mac_Passport/projects/personal/atf')
 
-# Path to chromedriver 
-service = Service('/Applications/geckodriver')
-options = Options()
 
-# Initialize the WebDriver
-driver = webdriver.Firefox(service=service, options=options)
-wait = WebDriverWait(driver, 10) 
-'''
 
 '''
 states = ["alabama", "alabama", "arizona", "california", "colorado", 
@@ -33,7 +23,7 @@ states = ["alabama", "alabama", "arizona", "california", "colorado",
           "virginia", "washington", "west-virginia", "wisconsin", "wyoming",
           "puerto-rico"]
 
-#years = ["2020", "2021", "2022", "2023", "2024"]
+years = ["2020", "2021", "2022", "2023", "2024"]
 '''
 
 states = ["district-columbia", "oklahoma"]
@@ -52,27 +42,12 @@ for state in states:
     for year in years:
         url = base_url.format(state, year)
         print(f"Begin scraping: {url}")
-
-        # Send request to fetch content
-        #driver.get(url)
-        #response = requests.get(url)
-        
-        # Wait for the body to load
-        #wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
         
         '''
         # Review fetched content
         with open("temp.html", "w+") as file:
             file.write(response.text)
         '''       
-        '''
-        # Review fetched content
-        with open("temp.html", "w", encoding="utf-8") as file:
-            file.write(driver.page_source)
-        '''
-        
-        # Get page source
-        #page_source = driver.page_source
         
         response = requests.get(url)
         
@@ -103,6 +78,7 @@ for state in states:
                         category = th_element.text.strip().replace(" ", "_")  # Extract the text only
                         value = td_element.text.strip().replace(",", "")  # Extract and clean the text from td
                 
+                        state = state.replace("-", " ").title()
                         row_dict = {
                             "State": state,
                             "Year": year,
@@ -124,11 +100,40 @@ for state in states:
 # Convert list of dictionaries to Pandas DataFrame
 df = pd.DataFrame(all_data)
 
+prepositions_articles = ['on ', 'with', 'a ', 'an ','for', 'in', 'the', 'with', '  ']
+
+states_title = ["Alabama", "Alabama", "Arizona", "California", "Colorado", 
+          "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
+          "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+          "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
+          "Massaschusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
+          "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
+          "New Meexico", "New York", "North Carolina", "North Dakota", "Ohio", 
+          "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+          "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+          "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+          "Puerto Rico"]
+
+def remove_characters(text, states_title, prepositions_articles):
+    for state in states_title:
+        text = text.replace(state, '').strip()
+
+    for item in prepositions_articles:
+        text = text.replace(' ' + item.lower() + ' ', ' ').strip()
+    
+    # Remove any extra spaces that might appear due to replacements
+    return ' '.join(text.split())
+
+# Apply the function to the 'text' column
+df['Section_clean'] = df['Section'].apply(lambda x: remove_characters(x, states_title, prepositions_articles))
+
+# Drop contents, drop disclaimer
+
 # Display the first few rows
 print(df.head())
 
 # Save to CSV
-df.to_csv("output/scraped_data.csv", index=False)
+df.to_csv("./output/scraped_data.csv", index=False)
 
 print("Scraping complete. Data saved to csv.")
 
