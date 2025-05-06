@@ -7,12 +7,33 @@ import os
 import re
 import numpy as np
 
+
+def remove_characters(text, states_title_case, words):
+    for state in states_title_case:
+        text = text.replace(f'with an {state} Recovery', '').strip()
+        text = text.replace(f'with a {state} Recovery', '').strip()
+        text = text.replace('Firearm Traces', '').strip()
+        text = text.replace(state, '').strip()
+
+
+    for word in words:
+        #text = text.replace(' ' + word.lower() + ' ', ' ').strip()
+        text = re.sub(r'\b' + re.escape(word.strip()) + r'\b', '', text, flags=re.IGNORECASE)
+    
+    text = re.sub(r'\u200b', '', text)
+    
+    #return ' '.join(text.split())
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+
+# Set working directory
+
 print(os.getcwd())
 os.chdir('/Volumes/Mac_Passport/projects/personal/atf')
 
+# Assign states and years
 
-
-'''
 states = ["alabama", "alabama", "arizona", "california", "colorado", 
           "connecticut", "delaware", "district-columbia", "florida", "georgia",
           "hawaii", "idaho", "illinois", "indiana", "iowa",
@@ -26,18 +47,38 @@ states = ["alabama", "alabama", "arizona", "california", "colorado",
           "puerto-rico"]
 
 years = ["2020", "2021", "2022", "2023", "2024"]
-'''
 
+'''
 states = ["district-columbia", "oklahoma"]
 years = ["2023"]
+'''
+
+# Assign strings for cleaning
+
+words = ['Calendar', 'Year', '2023', '2022', '2021', '2020', 'on', 'with', 'a', 'an','for', 'in', 'the', 'with']
+
+states_title_case = ["Alabama", "Alabama", "Arizona", "California", "Colorado", 
+          "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
+          "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+          "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
+          "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
+          "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
+          "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", 
+          "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+          "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+          "West Virginia", "Virginia", "Washington", "Wisconsin", "Wyoming",
+          "Puerto Rico"]
 
 
 # Define the webpage URL
+
 base_url = "https://www.atf.gov/resource-center/firearms-trace-data-{}-{}"
 
-all_data = []
 
-# Loop through each state and year
+# Get data for each state and year
+
+all_data = [] # Empty list to store scraped data
+
 for state in states:
     for year in years:
         url = base_url.format(state, year)
@@ -119,52 +160,33 @@ for state in states:
 # Convert list of dictionaries to Pandas DataFrame
 df = pd.DataFrame(all_data)
 
-words = ['Calendar', 'Year', '2023', '2022', '2021', 'on', 'with', 'a', 'an','for', 'in', 'the', 'with']
-
-states_title_case = ["Alabama", "Alabama", "Arizona", "California", "Colorado", 
-          "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
-          "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-          "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
-          "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
-          "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
-          "New Meexico", "New York", "North Carolina", "North Dakota", "Ohio", 
-          "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
-          "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
-          "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
-          "Puerto Rico"]
-
-def remove_characters(text, states_title_case, words):
-    for state in states_title_case:
-        text = text.replace(f'with an {state} Recovery', '').strip()
-        text = text.replace(f'with a {state} Recovery', '').strip()
-        text = text.replace('Firearm Traces', '').strip()
-        text = text.replace(state, '').strip()
-
-
-    for word in words:
-        #text = text.replace(' ' + word.lower() + ' ', ' ').strip()
-        text = re.sub(r'\b' + re.escape(word.strip()) + r'\b', '', text, flags=re.IGNORECASE)
-    
-    text = re.sub(r'\u200b', '', text)
-    
-    #return ' '.join(text.split())
-    return re.sub(r'\s+', ' ', text).strip()
-
-
-def rename_category_col(text):
-    text = text.replace('Recovery City', 'Top Recovery Cities')
-    text = text.replace('Top 15 Source States Firearms', 'Top 15 Source States')
-    return text
 
 # Clean data
     
-    # Remove categories
+    # Remove Section characters 
 
 df['Section'] = df['Section_raw'].apply(lambda x: remove_characters(x, states_title_case, words))
     
-    # Rename categories
+    # Rename Section categories
     
-df['Section'] = df['Section'].apply(lambda x: rename_category_col(x))
+exact_replacements = {
+    'Top Source States Firearms': 'Top States Where Firearms Came From',
+    'Top 15 Source States': 'Top States Where Firearms Came From',
+    'Top 15 Source States Firearms': 'Top States Where Firearms Came From',
+    'Top 15 Source States Firearm': 'Top States Where Firearms Came From',
+    'Top¬†Source States Firearms': 'Top States Where Firearms Came From',
+    'Source States Firearms': 'Top States Where Firearms Came From',
+    'Recovery City Firearms': 'Top Recovery Cities in State',
+    'Top Recovery Cities Firearms': 'Top Recovery Cities in State',
+    'Categories Reported': 'Top Crimes Reported',
+    'Top Categories Reported': 'Top Crimes Reported',
+    'Firearm Types': 'Firearms Types Recovered in State',
+    'Time-To-Crime Rates Firearms': 'Time-to-Crime for Firearms Recovered in State',
+    'Age of Possessors Firearms': 'Age of Possessors',
+    '': 'Top Calibers Reported' # Delaware had an empty header
+}
+    
+df['Section'] = df['Section'].replace(exact_replacements)
 
     # Replace empty note cells with missing
     
@@ -178,13 +200,17 @@ df.loc[df["Note"].isna(), "Note2"] = np.nan
 
     # Drop section headers that had no data
 
-values_to_remove = ["Contents", "ATF Firearms Trace Data Disclaimer"] 
+values_to_remove = ["Contents", "ATF Firearms Trace Data Disclaimer", "Total Number of Firearms Recovered and Traced"] 
 df = df[~df["Section"].isin(values_to_remove)]
 
 
-# Review categories and columns
+# Review categories and locations
 
 df_category_values = pd.DataFrame(df['Category_or_Location'].value_counts())
+
+# Remove weird characters from Category/Location
+
+df['Category_or_Place'] = df['Category_or_Location'].str.replace('¬†', '', regex=False)
 
 # Display the first few rows
 print(df.head())
